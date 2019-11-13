@@ -8,6 +8,11 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import scipy.linalg
 
+'''
+Title: Camera Calibration
+'''
+
+
 def read_3d_points(path):
     if not os.path.exists(path):
         return None
