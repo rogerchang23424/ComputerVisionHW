@@ -1,0 +1,14 @@
+*.pdf
+*.zip
+*.rar
+*.tar
+*.docx
+*.doc
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+*.pyc
+Homework1/hw1_1/results/*.png
+.idea
+com
