@@ -7,6 +7,10 @@ import re
 import matplotlib.pyplot as plt
 import os
 
+'''
+Title: Harris Corner Detection
+'''
+
 
 def gaussian_smooth(img, ksize=5, sigma=5, padding='mirror', out_type=np.uint8):
     _ksize = np.int(ksize)
