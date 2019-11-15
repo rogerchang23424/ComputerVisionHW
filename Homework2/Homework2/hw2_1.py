@@ -184,7 +184,11 @@ if __name__ == '__main__':
     C1 = -np.matmul(R1.T, t1)
     C2 = -np.matmul(R2.T, t2)
 
-    
+    from visualize import visualize
+    visualize(points_3d[:, :3], R1, t1, R2, t2)
+
+
+    '''
     #plot 3d image
     fig = plt.figure(figsize=(10,10), dpi=72)
     plot_3d_scene(fig, C1, R1, C2, R2)
@@ -197,5 +201,5 @@ if __name__ == '__main__':
     angle = theta / np.pi * 180
     print("Angle: %f" % angle)
     plt.show()
-    
+    '''
     cv2.waitKey(-1)
