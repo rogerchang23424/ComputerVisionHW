@@ -9,6 +9,7 @@
 *.xls
 *.xlsx
 *.pyc
+*.csv
 Homework1/hw1_1/results/*.png
 .idea
 com
