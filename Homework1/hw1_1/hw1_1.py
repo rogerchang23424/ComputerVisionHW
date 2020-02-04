@@ -6,6 +6,7 @@ import math
 import re
 import matplotlib.pyplot as plt
 import os
+import time
 
 '''
 Title: Harris Corner Detection
@@ -136,21 +137,11 @@ def sobel_edge_detection(img, threshold=20, colormap='viridis', skip_colormap=Fa
     h_pi = np.pi / 2
 
     gra[np.isnan(gra)] = h_pi
-    gra[mag <= threshold] = - 2.
-    gra_colormap = np.ndarray((h, w, 3), dtype=np.uint8)
+    colors = plt.get_cmap(colormap).colors
 
-    if not skip_colormap:
-        print('Generating Color Map')
-        colors = plt.get_cmap(colormap).colors
-        for i in range(h):
-            print('\r%3.2f%%' % (i/h*100), end='')
-            for j in range(w):
-                if gra[i, j] < - h_pi:
-                    gra_colormap[i, j] = np.array([0, 0, 0], dtype=np.uint8)
-                else:
-                    s = np.round((gra[i, j] + h_pi) * 255 / np.pi)
-                    gra_colormap[i, j] = np.uint8(np.round(np.dot(mag_c[i, j], colors[np.int(s)])))
-        print('\r100%        ')
+    gra_index = np.round((gra + h_pi) * 255 / np.pi).astype('uint8')
+    gra_color = np.array(colors)[gra_index]
+    gra_colormap = np.uint8(np.round(gra_color * mag_c[..., np.newaxis]))
 
     res_x[mag<=threshold] = 0
     res_y[mag<=threshold] = 0
@@ -310,17 +301,15 @@ if __name__ == '__main__':
     src = cv2.imread(path)
     src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 
+    start = time.time()
     g_res_5 = gaussian_smooth(src, 5, 5)
-
     # t = cv2.imread(out_dir+'%s_gaussian_k=5_2.png' % filename)
     # t = cv2.cvtColor(t, cv2.COLOR_BGR2RGB)
     # print(psnr(t, g_res_5))
     # del t
  
     cv2.imwrite(out_dir+'%s_gaussian_k=5.png' % filename, cv2.cvtColor(g_res_5, cv2.COLOR_RGB2BGR))
-
     g_res_10 = gaussian_smooth(src, 10, 5)
-    
     # t = cv2.imread(out_dir+'%s_gaussian_k=10_2.png' % filename)
     # t = cv2.cvtColor(t, cv2.COLOR_BGR2RGB)
     # print(psnr(t, g_res_10))
@@ -329,12 +318,12 @@ if __name__ == '__main__':
 
     gray_res_5 = cv2.cvtColor(g_res_5, cv2.COLOR_RGB2GRAY)
     mag_5, gra_5, img_x5, img_y5 = sobel_edge_detection(gray_res_5, threshold=sobel_edge_threshold, colormap=colormap)
-    cv2.imwrite(out_dir+'%s_magnitude_k=5.png' % filename, cv2.cvtColor(mag_5, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(out_dir+'%s_magnitude_k=5.png' % filename, cv2.cvtColor(mag_5, cv2.COLOR_GRAY2BGR))
     cv2.imwrite(out_dir+'%s_direction_k=5.png' % filename, cv2.cvtColor(gra_5, cv2.COLOR_RGB2BGR))
 
     gray_res_10 = cv2.cvtColor(g_res_10, cv2.COLOR_RGB2GRAY)
     mag_10, gra_10, img_x10, img_y10 = sobel_edge_detection(gray_res_10, threshold=sobel_edge_threshold, colormap=colormap)
-    cv2.imwrite(out_dir + '%s_magnitude_k=10.png' % filename, cv2.cvtColor(mag_10, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(out_dir + '%s_magnitude_k=10.png' % filename, cv2.cvtColor(mag_10, cv2.COLOR_GRAY2BGR))
     cv2.imwrite(out_dir + '%s_direction_k=10.png' % filename, cv2.cvtColor(gra_10, cv2.COLOR_RGB2BGR))
 
     for window_size in [3, 30]:
@@ -361,6 +350,7 @@ if __name__ == '__main__':
         cv2.imwrite(out_dir + '%s_corners_w=%d.png' % (filename, window_size), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         del img
 
+    print(time.time()-start)
     img = src.copy()
     img2 = rotate30(img)
     del img
