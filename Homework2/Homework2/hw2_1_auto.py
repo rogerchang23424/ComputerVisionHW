@@ -119,13 +119,42 @@ if __name__ == '__main__':
     P3 = points_3d.T
     camera_matrix = {}
 
-    img = cv2.imread('data/chessboard_1.jpg')
-    xx = img.copy()
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    dst = cv2.equalizeHist(img)
-    cv2.imshow("bbb", dst)
+    img = cv2.imread('data/chessboard_2.jpg')
+    cv2.imshow("aaa", img)
 
-    found , corners = cv2.findChessboardCorners(dst, (4, 4), None)
-    cv2.drawChessboardCorners(dst, (4, 4), corners, found)
-    cv2.imshow("aaa", dst)
-    cv2.waitKey(-1)
+    gray = img[..., 1]
+    cv2.imshow("bbb", gray)
+
+    count = np.zeros(256)
+    print(gray.shape[0] * gray.shape[1])
+    for p in gray.ravel():
+        count[p] += 1
+    print(np.sum(count))
+    x = [xx for xx in range(256)]
+    plt.plot(x, count)
+    plt.show()
+
+    threshold = 127
+    binary = np.zeros(gray.shape)
+    binary[gray > threshold] = 255
+
+    h, w = gray.shape
+    cv2.imshow("ccc", binary)
+
+    res_tmp = signal.convolve2d(binary, np.array([[-1, 1]]), 'valid')
+    res_x = np.zeros(gray.shape)
+    res_x[:, 1:] = np.abs(res_tmp)
+    del res_tmp
+    res_tmp = signal.convolve2d(binary, np.array([[-1], [1]]), 'valid')
+    res_y = np.zeros(gray.shape)
+    res_y[1:, :] = np.abs(res_tmp)
+    del res_tmp
+    res = np.clip(res_x + res_y, 0, 255).astype('uint8')
+
+    res2 = cv2.Canny(gray, 50, 150)
+
+    cv2.imwrite("ddd.png", res)
+    cv2.imwrite("eee.png", res2)
+
+    #cv2.imshow("ddd", res)
+    cv2.waitKey(0)
