@@ -109,6 +109,11 @@ def getH(S, D):
 
 def forwarding_nearest(dst_p, imgsrc, imgdst, weight, x, y):
     dst_x, dst_y = np.int(np.round(dst_p[0])), np.int(np.round(dst_p[1]))
+    h, w = imgdst.shape[:2]
+    if dst_y > h-1:
+        dst_y = h-1
+    if dst_x > w-1:
+        dst_x = w-1
     if weight[dst_y, dst_x] == 0:
         imgdst[dst_y, dst_x] = np.array([0, 0, 0])
     imgdst[dst_y, dst_x] += imgsrc[y, x]
@@ -117,10 +122,13 @@ def forwarding_nearest(dst_p, imgsrc, imgdst, weight, x, y):
 
 def forwarding_bilinear(dst_p, imgsrc, imgdst, weight, x, y):
     x_floor, y_floor = np.int(np.floor(dst_p[0])), np.int(np.floor(dst_p[1]))
+    h, w = imgdst.shape[:2]
     x_rate = dst_p[0] - x_floor
     y_rate = dst_p[1] - y_floor
-    for dst_x, xrate in zip([x_floor, x_floor+1], [1-x_rate, x_rate]):
-        for dst_y, yrate in zip([y_floor, y_floor + 1], [1 - y_rate, y_rate]):
+    x_next = x_floor if x_floor > w-2 else x_floor + 1
+    y_next = y_floor if y_floor > h - 2 else y_floor + 1
+    for dst_x, xrate in zip([x_floor, x_next], [1-x_rate, x_rate]):
+        for dst_y, yrate in zip([y_floor, y_next], [1 - y_rate, y_rate]):
             if weight[dst_y, dst_x] == 0:
                 imgdst[dst_y, dst_x] = np.array([0, 0, 0])
             weight[dst_y, dst_x] += xrate * yrate
@@ -200,16 +208,24 @@ def do_forward_projection(H, imgsrc, srcmask, imgdst, dstmask, method='bilinear'
 
 def get_color_bilinear_inverse(res_s, imgsrc):
     x_floor, y_floor = np.int(np.floor(res_s[0])), np.int(np.floor(res_s[1]))
+    h, w = imgsrc.shape[:2]
     x_rate = res_s[0] - x_floor
     y_rate = res_s[1] - y_floor
-    return x_rate * y_rate * imgsrc[y_floor + 1, x_floor + 1] + \
-           (1 - x_rate) * y_rate * imgsrc[y_floor + 1, x_floor] + \
-           x_rate * (1 - y_rate) * imgsrc[y_floor, x_floor + 1] + \
+    x_next = x_floor if x_floor > w-2 else x_floor + 1
+    y_next = y_floor if y_floor > h - 2 else y_floor + 1
+    return x_rate * y_rate * imgsrc[y_next, x_next] + \
+           (1 - x_rate) * y_rate * imgsrc[y_next, x_floor] + \
+           x_rate * (1 - y_rate) * imgsrc[y_floor, x_next] + \
            (1 - x_rate) * (1 - y_rate) * imgsrc[y_floor, x_floor]
 
 
 def get_color_nearest_inverse(res_s, imgsrc):
     x_cap, y_cap = np.int(np.round(res_s[0])), np.int(np.round(res_s[1]))
+    h, w = imgsrc.shape[:2]
+    if x_cap > w-1:
+        x_cap = w - 1
+    if y_cap > h - 1:
+        y_cap = h-1
     return imgsrc[y_cap, x_cap]
 
 
