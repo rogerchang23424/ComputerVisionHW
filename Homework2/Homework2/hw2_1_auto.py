@@ -111,6 +111,17 @@ def plot_3d_scene(fig, cam1, R1, cam2, R2):
     plot_3d_camera(ax, cam2, R2, color='g', text='Cam2')
 
 
+def get_binary_edge(binary):
+    bin2 = binary / 255
+    kernel = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+    tmp = np.zeros((bin2.shape[0] + 2, bin2.shape[1]+2))
+    tmp[1:-1, 1:-1] = bin2
+    calc_res = scipy.signal.convolve2d(tmp, kernel, 'valid')
+    mask = ~((calc_res == 0) | (calc_res == 4))
+    res = (mask & (bin2 == 1)).astype('uint8') * 255
+
+    return res
+
 if __name__ == '__main__':
     path_3d = 'data/Point3D.txt'
     points_3d = read_3d_points(path_3d)
@@ -120,10 +131,10 @@ if __name__ == '__main__':
     camera_matrix = {}
 
     img = cv2.imread('data/chessboard_2.jpg')
-    cv2.imshow("aaa", img)
+    cv2.imwrite("aaa.png", img)
 
     gray = img[..., 1]
-    cv2.imshow("bbb", gray)
+    cv2.imwrite("bbb.png", gray)
 
     count = np.zeros(256)
     print(gray.shape[0] * gray.shape[1])
@@ -134,27 +145,24 @@ if __name__ == '__main__':
     plt.plot(x, count)
     plt.show()
 
-    threshold = 127
+    threshold = 128
     binary = np.zeros(gray.shape)
     binary[gray > threshold] = 255
 
     h, w = gray.shape
-    cv2.imshow("ccc", binary)
+    cv2.imwrite("ccc.png", binary)
 
-    res_tmp = signal.convolve2d(binary, np.array([[-1, 1]]), 'valid')
-    res_x = np.zeros(gray.shape)
-    res_x[:, 1:] = np.abs(res_tmp)
-    del res_tmp
-    res_tmp = signal.convolve2d(binary, np.array([[-1], [1]]), 'valid')
-    res_y = np.zeros(gray.shape)
-    res_y[1:, :] = np.abs(res_tmp)
-    del res_tmp
-    res = np.clip(res_x + res_y, 0, 255).astype('uint8')
+    res1 = get_binary_edge(binary)
 
-    res2 = cv2.Canny(gray, 50, 150)
+    threshold = 75
+    binary = np.zeros(gray.shape)
+    binary[gray > threshold] = 255
 
-    cv2.imwrite("ddd.png", res)
-    cv2.imwrite("eee.png", res2)
+    res2 = get_binary_edge(binary)
+
+    res = np.clip(res1 + res2, 0, 255)
+    cv2.imwrite('ddd.png', res)
+
 
     #cv2.imshow("ddd", res)
     cv2.waitKey(0)
