@@ -304,7 +304,7 @@ if __name__ == '__main__':
     src = cv2.imread(path)
     src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 
-
+    start = time.time()
     g_res_5 = gaussian_smooth(src, 5, 5)
     # t = cv2.imread(out_dir+'%s_gaussian_k=5_2.png' % filename)
     # t = cv2.cvtColor(t, cv2.COLOR_BGR2RGB)
@@ -320,9 +320,7 @@ if __name__ == '__main__':
     cv2.imwrite(out_dir+'%s_gaussian_k=10.png' % filename, cv2.cvtColor(g_res_10, cv2.COLOR_RGB2BGR))
 
     gray_res_5 = cv2.cvtColor(g_res_5, cv2.COLOR_RGB2GRAY)
-    start = time.time()
     mag_5, gra_5, img_x5, img_y5 = sobel_edge_detection(gray_res_5, threshold=sobel_edge_threshold, colormap=colormap)
-    print(time.time() - start)
     cv2.imwrite(out_dir+'%s_magnitude_k=5.png' % filename, cv2.cvtColor(mag_5, cv2.COLOR_GRAY2BGR))
     cv2.imwrite(out_dir+'%s_direction_k=5.png' % filename, cv2.cvtColor(gra_5, cv2.COLOR_RGB2BGR))
 
@@ -355,7 +353,7 @@ if __name__ == '__main__':
         cv2.imwrite(out_dir + '%s_corners_w=%d.png' % (filename, window_size), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         del img
 
-
+    print(time.time() - start)
     img = src.copy()
     img2 = rotate30(img)
     del img
