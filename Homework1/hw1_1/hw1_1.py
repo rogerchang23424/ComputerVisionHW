@@ -82,24 +82,45 @@ def gaussian_smooth(img, ksize=5, sigma=5, padding='mirror', out_type=np.uint8):
     else:
         raise Exception('')
 
-    out1 = np.zeros((h+ksize-1, w, depth), dtype=np.float64)
-    window = window.reshape(1, ksize)
-    for d in range(depth):
-        out_t = signal.convolve2d(_tmp[:, :, d], window, 'valid')
-        out1[:, :, d] = out_t
-        del out_t
-    del _tmp
+    if is_odd:
+        pad_size = ksize - 1
 
-    res = np.zeros((h, w, depth), dtype=out_type)
-    window = window.reshape(ksize, 1)
-    for d in range(depth):
-        out_t = signal.convolve2d(out1[:, :, d], window, 'valid')
-        if not (out_type == np.float64 or out_type == np.float32):
-            res[:, :, d] = out_type(np.round(out_t))
-        else:
-            res[:, :, d] = out_type(out_t)
-        del out_t
-    del out1
+        out1 = window[half] * _tmp[:, half:-pad_size+half]
+        for i in range(1, half):
+            out1 += window[i] * (_tmp[:, i:-pad_size + i] + _tmp[:, pad_size - i:-i])
+        out1 += window[0] * (_tmp[:, :-pad_size] + _tmp[:, pad_size:])
+        del _tmp
+
+        res = window[half] * out1[half:-pad_size+half, :]
+        for i in range(1, half):
+            res += window[i] * (out1[i:-pad_size + i, :] + out1[pad_size - i:-i, :])
+        res += window[0] * (out1[:-pad_size, :] + out1[pad_size:, :])
+        del out1
+
+        if out_type != np.float64:
+            if out_type != np.float32:
+                res = np.round(res)
+            res = out_type(res)
+
+    else:
+        out1 = np.zeros((h+ksize-1, w, depth), dtype=np.float64)
+        window = window.reshape(1, ksize)
+        for d in range(depth):
+            out_t = signal.convolve2d(_tmp[:, :, d], window, 'valid')
+            out1[:, :, d] = out_t
+            del out_t
+        del _tmp
+
+        res = np.zeros((h, w, depth), dtype=out_type)
+        window = window.reshape(ksize, 1)
+        for d in range(depth):
+            out_t = signal.convolve2d(out1[:, :, d], window, 'valid')
+            if not (out_type == np.float64 or out_type == np.float32):
+                res[:, :, d] = out_type(np.round(out_t))
+            else:
+                res[:, :, d] = out_type(out_t)
+            del out_t
+        del out1
 
     return res
 
