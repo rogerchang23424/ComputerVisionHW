@@ -148,7 +148,7 @@ def sobel_edge_detection(img, threshold=20, colormap='viridis', skip_colormap=Fa
     lb = _tmp[2:, :-2]
     rb = _tmp[2:, 2:]
 
-    res_x = (_tmp_2x[1:-1, :-2] - _tmp_2x[1:-1, 2:] + lt + lb - rt - rb).astype(np.float32)
+    res_x = (_tmp_2x[1:-1, 2:] - _tmp_2x[1:-1, :-2] + rt + rb - lt - lb).astype(np.float32)
     res_y = (_tmp_2x[2:, 1:-1] - _tmp_2x[:-2, 1:-1] + lb + rb - lt - rt).astype(np.float32)
 
     t = np.sqrt(np.square(res_x)+np.square(res_y))
